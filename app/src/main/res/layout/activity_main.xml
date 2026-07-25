@@ -18,38 +18,44 @@
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <ImageView
-                android:layout_width="38dp"
-                android:layout_height="38dp"
-                android:background="@drawable/bg_logo"
-                android:contentDescription="@string/app_name"
-                android:padding="9dp"
-                android:src="@drawable/ic_play" />
+            <FrameLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_neon_circle">
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/app_name"
+                    android:src="@drawable/ic_play"
+                    android:tint="@color/neon" />
+            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
+                android:letterSpacing="0.12"
                 android:text="@string/splash_title"
                 android:textColor="@color/text"
-                android:textSize="20sp"
+                android:textSize="17sp"
                 android:textStyle="bold" />
         </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="34dp"
             android:text="@string/hero_title"
             android:textColor="@color/text"
-            android:textSize="28sp"
+            android:textSize="27sp"
             android:textStyle="bold" />
 
         <!-- Input -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="18dp"
             android:background="@drawable/bg_input"
             android:orientation="vertical"
             android:padding="10dp">
@@ -74,6 +80,7 @@
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/bg_button"
+                android:letterSpacing="0.05"
                 android:text="@string/btn_get"
                 android:textColor="@color/white"
                 android:textSize="15sp"
@@ -97,7 +104,7 @@
             android:id="@+id/resultsHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="26dp"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:visibility="gone">
@@ -127,5 +134,57 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:orientation="vertical" />
+
+        <!-- Metadata: copy title / description -->
+        <LinearLayout
+            android:id="@+id/metaCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_card"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/metaTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/meta_loading"
+                android:textColor="@color/text"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnCopyTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_button_copy"
+                    android:enabled="false"
+                    android:text="@string/btn_copy_title"
+                    android:textColor="@color/text"
+                    android:textSize="13sp" />
+
+                <Button
+                    android:id="@+id/btnCopyDesc"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_button_copy"
+                    android:enabled="false"
+                    android:text="@string/btn_copy_desc"
+                    android:textColor="@color/text"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

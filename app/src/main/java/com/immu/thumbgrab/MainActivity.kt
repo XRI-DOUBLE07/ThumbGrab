@@ -1,6 +1,8 @@
 package com.immu.thumbgrab
 
 import android.app.DownloadManager
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.net.Uri
 import android.os.Bundle
@@ -20,24 +22,35 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
+import java.net.URLEncoder
+import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
 
     data class Quality(val key: String, val name: String, val size: String, val badge: String)
 
     private val qualities = listOf(
-        Quality("maxresdefault", "Max-Res HD", "1280 × 720+", "HD"),
-        Quality("sddefault", "Standard", "640 × 480", "480p"),
-        Quality("hqdefault", "High", "480 × 360", "360p"),
-        Quality("mqdefault", "Medium", "320 × 180", "180p"),
-        Quality("default", "Preview", "120 × 90", "90p")
+        Quality("maxresdefault", "Full HD", "1280 × 720+", "HD"),
+        Quality("hqdefault", "360p", "480 × 360", "360p")
     )
+
+    private val executor = Executors.newSingleThreadExecutor()
 
     private lateinit var input: EditText
     private lateinit var list: LinearLayout
     private lateinit var errorView: TextView
     private lateinit var videoIdView: TextView
     private lateinit var resultsHeader: View
+    private lateinit var metaCard: View
+    private lateinit var metaTitle: TextView
+    private lateinit var btnCopyTitle: Button
+    private lateinit var btnCopyDesc: Button
+
+    private var videoTitle: String? = null
+    private var videoDesc: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,8 +61,25 @@ class MainActivity : AppCompatActivity() {
         errorView = findViewById(R.id.errorText)
         videoIdView = findViewById(R.id.videoId)
         resultsHeader = findViewById(R.id.resultsHeader)
+        metaCard = findViewById(R.id.metaCard)
+        metaTitle = findViewById(R.id.metaTitle)
+        btnCopyTitle = findViewById(R.id.btnCopyTitle)
+        btnCopyDesc = findViewById(R.id.btnCopyDesc)
 
         findViewById<Button>(R.id.btnGo).setOnClickListener { go() }
+
+        btnCopyTitle.setOnClickListener {
+            videoTitle?.let { t ->
+                copyToClipboard("Video title", t)
+                Toast.makeText(this, getString(R.string.copied_title), Toast.LENGTH_SHORT).show()
+            }
+        }
+        btnCopyDesc.setOnClickListener {
+            videoDesc?.let { d ->
+                copyToClipboard("Video description", d)
+                Toast.makeText(this, getString(R.string.copied_desc), Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun go() {
@@ -57,12 +87,14 @@ class MainActivity : AppCompatActivity() {
         if (id == null) {
             errorView.visibility = View.VISIBLE
             resultsHeader.visibility = View.GONE
+            metaCard.visibility = View.GONE
             list.removeAllViews()
             return
         }
         errorView.visibility = View.GONE
         hideKeyboard()
         render(id)
+        fetchMetadata(id)
     }
 
     private fun extractId(raw: String): String? {
@@ -109,7 +141,7 @@ class MainActivity : AppCompatActivity() {
             name.text = q.name
             size.text = q.size
 
-            val url = "https://img.youtube.com/vi/$videoId/${q.key}.jpg"
+            var url = "https://img.youtube.com/vi/$videoId/${q.key}.jpg"
 
             Glide.with(this).load(url)
                 .listener(object : RequestListener<android.graphics.drawable.Drawable> {
@@ -117,9 +149,16 @@ class MainActivity : AppCompatActivity() {
                         e: GlideException?, model: Any?,
                         target: Target<android.graphics.drawable.Drawable>, isFirstResource: Boolean
                     ): Boolean {
-                        na.visibility = View.VISIBLE
-                        btn.isEnabled = false
-                        btn.alpha = 0.4f
+                        if (q.key == "maxresdefault") {
+                            // Fallback: sddefault for videos without maxres
+                            url = "https://img.youtube.com/vi/$videoId/sddefault.jpg"
+                            size.text = "640 × 480"
+                            runOnUiThread { Glide.with(this@MainActivity).load(url).into(img) }
+                        } else {
+                            na.visibility = View.VISIBLE
+                            btn.isEnabled = false
+                            btn.alpha = 0.4f
+                        }
                         return false
                     }
 
@@ -128,11 +167,10 @@ class MainActivity : AppCompatActivity() {
                         target: Target<android.graphics.drawable.Drawable>?,
                         dataSource: DataSource, isFirstResource: Boolean
                     ): Boolean {
-                        // YouTube serves a 120x90 placeholder for missing qualities
-                        if (q.key != "default" && resource.intrinsicWidth <= 120) {
-                            na.visibility = View.VISIBLE
-                            btn.isEnabled = false
-                            btn.alpha = 0.4f
+                        if (q.key == "maxresdefault" && resource.intrinsicWidth <= 120) {
+                            url = "https://img.youtube.com/vi/$videoId/sddefault.jpg"
+                            size.text = "640 × 480"
+                            runOnUiThread { Glide.with(this@MainActivity).load(url).into(img) }
                         }
                         return false
                     }
@@ -141,7 +179,6 @@ class MainActivity : AppCompatActivity() {
 
             btn.setOnClickListener { download(url, "${videoId}_${q.key}.jpg") }
 
-            // Staggered entry animation
             card.alpha = 0f
             card.translationY = 30f
             list.addView(card)
@@ -149,6 +186,65 @@ class MainActivity : AppCompatActivity() {
                 .setStartDelay((list.childCount * 90).toLong())
                 .setDuration(400).start()
         }
+    }
+
+    private fun fetchMetadata(videoId: String) {
+        videoTitle = null
+        videoDesc = null
+        metaCard.visibility = View.VISIBLE
+        metaTitle.text = getString(R.string.meta_loading)
+        btnCopyTitle.isEnabled = false
+        btnCopyDesc.isEnabled = false
+        btnCopyTitle.alpha = 0.4f
+        btnCopyDesc.alpha = 0.4f
+
+        executor.execute {
+            // 1) Title via oEmbed (no API key needed)
+            val title = try {
+                val watchUrl = URLEncoder.encode("https://www.youtube.com/watch?v=$videoId", "UTF-8")
+                val json = httpGet("https://www.youtube.com/oembed?url=$watchUrl&format=json")
+                JSONObject(json).getString("title")
+            } catch (e: Exception) { null }
+
+            // 2) Description via watch page (shortDescription in player response)
+            val desc = try {
+                val html = httpGet("https://www.youtube.com/watch?v=$videoId")
+                val m = Regex("\"shortDescription\":\"((?:[^\"\\\\]|\\\\.)*)\"").find(html)
+                if (m != null) {
+                    // Decode JSON string escapes by re-wrapping
+                    JSONObject("{\"d\":\"${m.groupValues[1]}\"}").getString("d")
+                } else null
+            } catch (e: Exception) { null }
+
+            runOnUiThread {
+                videoTitle = title
+                videoDesc = desc
+                if (title != null) {
+                    metaTitle.text = title
+                    btnCopyTitle.isEnabled = true
+                    btnCopyTitle.alpha = 1f
+                } else {
+                    metaTitle.text = getString(R.string.meta_failed)
+                }
+                if (desc != null) {
+                    btnCopyDesc.isEnabled = true
+                    btnCopyDesc.alpha = 1f
+                }
+            }
+        }
+    }
+
+    private fun httpGet(urlStr: String): String {
+        val conn = URL(urlStr).openConnection() as HttpURLConnection
+        conn.connectTimeout = 10000
+        conn.readTimeout = 10000
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36")
+        return conn.inputStream.bufferedReader().use { it.readText() }
+    }
+
+    private fun copyToClipboard(label: String, text: String) {
+        val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        cm.setPrimaryClip(ClipData.newPlainText(label, text))
     }
 
     private fun download(url: String, filename: String) {

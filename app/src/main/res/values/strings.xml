@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">YouTube Thumbnail Downloader</string>
-    <string name="splash_title">ThumbGrab</string>
-    <string name="splash_sub">youtube thumbnail downloader</string>
-    <string name="hero_title">Grab any YouTube thumbnail in full HD</string>
+    <string name="splash_title">THUMBGRAB</string>
+    <string name="hero_title">Paste video link</string>
     <string name="input_hint">https://youtube.com/watch?v=…</string>
-    <string name="btn_get">Get thumbnails</string>
+    <string name="btn_get">Get Thumbnails</string>
     <string name="btn_download">Download</string>
     <string name="error_invalid">That doesn\'t look like a YouTube link. Paste a full video URL or an 11-character video ID.</string>
     <string name="video_id_label">video id:</string>
@@ -13,4 +12,12 @@
     <string name="download_started">Download started — check your notifications</string>
     <string name="download_failed">Download failed. Try again.</string>
     <string name="thumb_desc">Video thumbnail</string>
+    <string name="q_full_hd">Full HD</string>
+    <string name="q_360">360p</string>
+    <string name="btn_copy_title">Copy Title</string>
+    <string name="btn_copy_desc">Copy Description</string>
+    <string name="copied_title">Title copied ✓</string>
+    <string name="copied_desc">Description copied ✓</string>
+    <string name="meta_loading">Loading video info…</string>
+    <string name="meta_failed">Couldn\'t load title/description</string>
 </resources>
