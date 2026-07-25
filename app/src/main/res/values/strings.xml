@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ThumbGrab</string>
+    <string name="splash_title">ThumbGrab</string>
+    <string name="splash_sub">youtube thumbnail downloader</string>
+    <string name="hero_title">Grab any YouTube thumbnail in full HD</string>
+    <string name="input_hint">https://youtube.com/watch?v=…</string>
+    <string name="btn_get">Get thumbnails</string>
+    <string name="btn_download">Download</string>
+    <string name="error_invalid">That doesn\'t look like a YouTube link. Paste a full video URL or an 11-character video ID.</string>
+    <string name="video_id_label">video id:</string>
+    <string name="not_available">not available for this video</string>
+    <string name="download_started">Download started — check your notifications</string>
+    <string name="download_failed">Download failed. Try again.</string>
+    <string name="thumb_desc">Video thumbnail</string>
+</resources>

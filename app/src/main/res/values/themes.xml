@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ThumbGrab" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:statusBarColor">@color/ink</item>
+        <item name="android:navigationBarColor">@color/ink</item>
+        <item name="android:windowBackground">@color/ink</item>
+        <item name="colorPrimary">@color/red</item>
+    </style>
+
+    <style name="Theme.ThumbGrab.Splash">
+        <item name="android:windowBackground">@color/ink</item>
+    </style>
+</resources>
