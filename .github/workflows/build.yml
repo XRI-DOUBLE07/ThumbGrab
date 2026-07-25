@@ -5,6 +5,10 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -22,9 +26,28 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.7'
+          cache-disabled: true
 
       - name: Build debug APK
-        run: gradle assembleDebug
+        run: |
+          set -o pipefail
+          gradle assembleDebug --no-daemon 2>&1 | tee build_output.txt
+
+      - name: Report failure as issue
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let log = '';
+            try { log = fs.readFileSync('build_output.txt','utf8'); } catch(e) { log = 'no log captured'; }
+            log = log.slice(-8000);
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Build failure log ' + context.runId,
+              body: '```\n' + log + '\n```'
+            });
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
