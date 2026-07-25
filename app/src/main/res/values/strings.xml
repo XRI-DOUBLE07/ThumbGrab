@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ThumbGrab</string>
+    <string name="app_name">YouTube Thumbnail Downloader</string>
     <string name="splash_title">ThumbGrab</string>
     <string name="splash_sub">youtube thumbnail downloader</string>
     <string name="hero_title">Grab any YouTube thumbnail in full HD</string>
