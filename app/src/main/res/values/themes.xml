@@ -4,7 +4,7 @@
         <item name="android:statusBarColor">@color/ink</item>
         <item name="android:navigationBarColor">@color/ink</item>
         <item name="android:windowBackground">@color/ink</item>
-        <item name="colorPrimary">@color/red</item>
+        <item name="colorPrimary">@color/neon</item>
     </style>
 
     <style name="Theme.ThumbGrab.Splash">
