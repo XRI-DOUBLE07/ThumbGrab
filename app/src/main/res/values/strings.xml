@@ -20,4 +20,9 @@
     <string name="copied_desc">Description copied ✓</string>
     <string name="meta_loading">Loading video info…</string>
     <string name="meta_failed">Couldn\'t load title/description</string>
+    <string name="btn_share">Share</string>
+    <string name="share_via">Share thumbnail via</string>
+    <string name="preparing">Preparing…</string>
+    <string name="share_failed">Could not prepare the image</string>
+    <string name="desc_unavailable">Description not available for this video</string>
 </resources>
